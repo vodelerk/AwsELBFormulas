@@ -1,0 +1,39 @@
+
+aws elbv2 help
+
+aws configure
+
+The next four commands will configure the EC2 instances as web servers, and ensure that they start upon boot up:
+
+sudo yum update -y
+sudo yum install -y httpd
+sudo service httpd start
+sudo chkconfig httpd on
+
+The next group of commands will create an index.html file in the appropriate directory:
+
+cd /var/www/html
+sudo touch index.html
+sudo chmod 777 index.html
+vim index.html
+
+The above vim command will open index.html for editing. The contents of index.html at the below link should be pasted into index.html, then the file should be saved:
+
+
+
+These five commands are used to create and configure the Application Load Balancer:
+
+aws elbv2 create-load-balancer --name my-load-balancer  \--subnets subnet-12345678 subnet-23456789 --security-groups sg-12345678
+Note: For the above command, we will need to enter the subnet and security group IDs of those resources in the lab environment.
+
+aws elbv2 create-target-group --name my-targets --protocol HTTP --port 80 \ --vpc-id vpc-12345678
+Note: For the above command, we will need to enter the VPC ID of the VPC in the environment.
+
+aws elbv2 register-targets --target-group-arn targetgroup-arn  \ --targets Id=i-12345678 Id=i-23456789
+Note: For the above command, we will need to enter the target group ARN returned in the CLI from command #2 above, and also enter the instance IDs of the two instances we created in your lab environment.
+
+aws elbv2 create-listener --load-balancer-arn loadbalancer-arn \ --protocol HTTP --port 80  \ --default-actions Type=forward,TargetGroupArn=targetgroup-arn
+Note: For the above command, we need to replace 'loadbalancer-arn' with the actual ARN of the Load Balancer in the lab environment. And we also need to replace 'targetgroup-arn' with the actual target group ARN returned to the CLI.
+
+aws elbv2 describe-target-health --target-group-arn targetgroup-arn
+Note: Replace 'targetgroup-arn' with the ARN returned to the CLI.
